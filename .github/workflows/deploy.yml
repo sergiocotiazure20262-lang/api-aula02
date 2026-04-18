@@ -1,0 +1,55 @@
+name: Deploy API no EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do codigo
+        uses: actions/checkout@v5
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Gerar pacote da aplicacao
+        run: |
+          tar --exclude='.git' \
+              --exclude='node_modules' \
+              --exclude='.github' \
+              -czf app.tar.gz .
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/ec2_key.pem
+          chmod 600 ~/.ssh/ec2_key.pem
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Enviar pacote para o EC2
+        run: |
+          scp -i ~/.ssh/ec2_key.pem app.tar.gz \
+            ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/ec2-user/
+
+      - name: Publicar aplicacao no EC2
+        run: |
+          ssh -i ~/.ssh/ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            mkdir -p /home/ec2-user/app
+            cd /home/ec2-user/app
+
+            rm -rf /home/ec2-user/app/*
+            tar -xzf /home/ec2-user/app.tar.gz -C /home/ec2-user/app
+            rm -f /home/ec2-user/app.tar.gz
+
+            npm install
+
+            pm2 delete api-aula02 || true
+            pm2 start server.js --name api-aula02
+            pm2 save
+          EOF
