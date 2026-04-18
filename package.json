@@ -1,0 +1,14 @@
+{
+  "name": "api-aula02",
+  "version": "1.0.0",
+  "description": "API Node.js com deploy automatico no EC2",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
