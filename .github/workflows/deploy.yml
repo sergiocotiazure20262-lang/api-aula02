@@ -52,5 +52,5 @@ jobs:
             pm2 save
             pm2 status
             sleep 3
-            pm2 logs api-aula02 --lines 20
+            pm2 logs api-aula02 --lines 20 --nostream
           EOF
