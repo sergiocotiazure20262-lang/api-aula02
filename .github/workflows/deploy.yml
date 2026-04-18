@@ -50,4 +50,7 @@ jobs:
             pm2 delete api-aula02 || true
             pm2 start server.js --name api-aula02
             pm2 save
+            pm2 status
+            sleep 3
+            pm2 logs api-aula02 --lines 20
           EOF
