@@ -20,10 +20,9 @@ jobs:
 
       - name: Gerar pacote da aplicacao
         run: |
-          tar --exclude='.git' \
-              --exclude='node_modules' \
-              --exclude='.github' \
-              -czf app.tar.gz .
+          mkdir -p deploy-package
+          rsync -av --exclude='.git' --exclude='node_modules' --exclude='.github' ./ deploy-package/
+          tar -czf app.tar.gz -C deploy-package .
 
       - name: Configurar chave SSH
         run: |
@@ -48,7 +47,6 @@ jobs:
             rm -f /home/ec2-user/app.tar.gz
 
             npm install
-
             pm2 delete api-aula02 || true
             pm2 start server.js --name api-aula02
             pm2 save
